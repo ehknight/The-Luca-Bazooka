@@ -3,14 +3,21 @@ import sys
 import os
 import numpy as np
 
+#PARAMETERS
+vidfeed=0 #0 usually corresponds to webcam feed
+outputToFile=True
+filename='output.avi'
+debugStuff=True
+cascadePath='/data/haarcascade_frontalface_default.xml'
+
 
 class FaceDetectionError(Exception):
     pass
 
 
 def extractFace(img, train=False):
-    path = '/Users/ethknig/haarcascade_frontalface_default.xml'
-    cascade = cv2.CascadeClassifier(path)
+    path = cascadePath
+    cascade = cv2.CascadeClassifier(cascade)
     if train == True:
         faces = cascade.detectMultiScale(
             img, scaleFactor=1.1,
@@ -61,7 +68,8 @@ def loadImagesFromFolder(folder):
 def trainStep(folder, label):
     label = np.array(label)
     imgs = loadImagesFromFolder(folder)
-    print(len(imgs))
+    if debugStuff==True:
+        print(len(imgs))
     return [[faceProcess(i) for i in imgs], np.array([label for x in imgs])]
 
 
@@ -72,25 +80,23 @@ def trainAll(folders):
         working = trainStep(i[1], i[0])
         totalFaces.extend(working[0])
         totalLabels.extend(working[1])
-        print(totalLabels)
+        if debugStuff=True:
+            print(totalLabels)
     recognizer.train(totalFaces, np.array(totalLabels))
 
-
-def ri(img):
-    # stands for read image but is abreviated because I use it so much
-    return cv2.imread(img, cv2.CV_LOAD_IMAGE_GRAYSCALE)
 
 
 def main(folders):
     global recognizer
     recognizer = cv2.createLBPHFaceRecognizer()
     trainAll(folders)
-    vidcap = cv2.VideoCapture('/Users/ethknig/shaqisback.mp4')
     cv2.namedWindow("The Luca Bazooka", cv2.cv.CV_WINDOW_AUTOSIZE)
-    w = int(vidcap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
-    h = int(vidcap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
-    fourcc = cv2.cv.CV_FOURCC(*'XVID')
-    video_writer = cv2.VideoWriter("output3.avi", fourcc, 25, (w, h))
+    vidcap = cv2.VideoCapture(vidfeed)
+    if outputToFile==True:
+        w = int(vidcap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
+        h = int(vidcap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
+        fourcc = cv2.cv.CV_FOURCC(*'XVID')
+        video_writer = cv2.VideoWriter(filename, fourcc, 25, (w, h))
     while True:
         ret, frame = vidcap.read()
         faces = extractFace(frame)
@@ -108,7 +114,8 @@ def main(folders):
             else:
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 191, 255), 2)
         cv2.imshow("The Luca Bazooka", frame)
-        video_writer.write(frame)
+        if outputToFile==True:
+            video_writer.write(frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     vidwrite.release()
