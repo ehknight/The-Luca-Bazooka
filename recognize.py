@@ -9,6 +9,7 @@ outputToFile=True
 filename='output.avi'
 debugStuff=True
 cascadePath='/data/haarcascade_frontalface_default.xml'
+trainingFolders=['/data/']
 
 
 class FaceDetectionError(Exception):
@@ -121,3 +122,6 @@ def main(folders):
     vidwrite.release()
     video_capture.release()
     cv2.destroyAllWindows()
+
+if __name__ == '__main__':
+    main(trainingFolders)
