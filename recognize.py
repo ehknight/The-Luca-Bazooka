@@ -9,7 +9,7 @@ outputToFile=True
 filename='output.avi'
 debugStuff=True
 cascadePath='/data/haarcascade_frontalface_default.xml'
-trainingFolders=['/data/']
+trainingFolders=['/training/luca/']
 
 
 class FaceDetectionError(Exception):
