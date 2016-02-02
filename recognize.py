@@ -58,7 +58,8 @@ def loadImagesFromFolder(folder):
     images = []
     print(os.listdir(folder))
     for filename in os.listdir(folder):
-        print(os.path.join(folder, filename))
+        if debugStuff:
+            print(os.path.join(folder, filename))
         img = cv2.imread(
             os.path.join(folder, filename), cv2.CV_LOAD_IMAGE_GRAYSCALE)
         if img is not None:
