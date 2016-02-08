@@ -33,6 +33,6 @@ class Servo:
         self.angle_vertical += dy
         self.write_vertical(self.angle_vertical)
 
-    def update (self, x, y):
-        self.update_dx(x-(self.x_res/2))
-        self.update_dy(y-(self.y_res/2))
+    def update (self, x, y):   #input the pixel x, y where object is found
+        self.update_dx(self.xconst*(x-(self.x_res/2)))
+        self.update_dy(self.yconst*(y-(self.y_res/2)))
