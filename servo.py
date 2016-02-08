@@ -2,32 +2,36 @@ import RPi.GPIO as GPIO
 import time
 
 class Servo:
-    def __init__(self, pin_horizon, pin_vertical,xconst,yconst, x_res, y_res):
+    def __init__(self, pin_horizon, pin_vertical,xconst=0,yconst=0, x_res=0, y_res=0):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(pin_horizon,GPIO.OUT)
         GPIO.setup(pin_vertical,GPIO.OUT)
-        self.pwm_horizon = GPIO.PWM(pin_horizon, 50)
-        self.pwm_vertical = GPIO.PWM(pin_vertical, 50)
-        self.dc_horizon = 100
-        self.dc_vertical = 100
-        pwm_horizon.start(dc_horizon)
-        pwm_vertical.start(dc_vertical)
-        self.xconst = xconst  #dutycycle/pixel = (dutycyle per degree)/(pixel per degree)
+        self.pwm_horizon = GPIO.PWM(pin_horizon, 100)
+        self.pwm_vertical = GPIO.PWM(pin_vertical, 100)
+        self.angle_horizon = 0
+        self.angle_vertical = 0
+        self.pwm_horizon.start(0)
+        self.pwm_vertical.start(0)
+        self.xconst = xconst  #angle/pixel
         self.yconst = yconst
         self.x_res = x_res
         self.y_res = y_res
 
-    def write_horizon(self,dc):
+    def write_horizon(self,angle):
+        dc = float(angle)/10.0+2.5
         self.pwm_horizon.ChangeDutyCycle(dc)
 
-    def write_vertical(self, dc):
+    def write_vertical(self, angle):
+        dc = float(angle)/10.0+2.5
         self.pwm_vertical.ChangeDutyCycle(dc)
 
     def update_dx(self, dx):
-        self.write_horizon(self.dc_horizon+dx*self.xconst)
+        self.angle_horizon += dx
+        self.write_horizon(self.angle_horizon)
 
     def update_dy(self, dy):
-        self.write_vertical(self.dc_vertical+dy*self.yconst)
+        self.angle_vertical += dy
+        self.write_vertical(self.angle_vertical)
 
     def update (self, x, y):
         self.update_dx(x-(self.x_res/2))
