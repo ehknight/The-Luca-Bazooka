@@ -1,22 +1,26 @@
 import cv2
+import imageio
 import sys
 import os
 from os.path import expanduser as eu
 import numpy as np
 from scipy import ndimage
+from skimage.feature import local_binary_pattern as lbp
 
 #PARAMETERS
-vidfeed=str(eu("~"))+'/The-Luca-Bazooka/classic.mp4' #0 usually corresponds to webcam feed
+vidfeed=str(eu("~"))+'/classic.mp4' #0 usually corresponds to webcam feed
 outputToFile=True
 filename='output.avi'
 confidenceLevel=125
 debugStuff=True
 rotate=True
-showImage=False
+showImage=True
 cascadePath=str(eu("~"))+'/The-Luca-Bazooka/data/haarcascade_frontalface_default.xml'
 trainingFolders=[str(eu("~"))+'/The-Luca-Bazooka/training/luca']
 changeResolution=True
 size=(.2,.2)
+a=1 #These two values correspond to the radius and resolution of the LBP visualizer
+b=15
 
 class FaceDetectionError(Exception):
     pass
@@ -103,11 +107,7 @@ def main(folders):
     if showImage:
         cv2.namedWindow("The Luca Bazooka", cv2.cv.CV_WINDOW_AUTOSIZE)
     vidcap = cv2.VideoCapture(vidfeed)
-    if outputToFile==True:
-        w = int(vidcap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
-        h = int(vidcap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT))
-        fourcc = cv2.cv.CV_FOURCC(*'XVID')
-        video_writer = cv2.VideoWriter(filename, fourcc, 25, (w, h))
+    video_writer=imageio.get_writer('~/The-Luca-Bazooka/'+filename,fps=24)
     while True:
         ret, frame = vidcap.read()
         if rotate:
@@ -121,24 +121,28 @@ def main(folders):
                 cv2.cvtColor(crop(frame, i), cv2.COLOR_RGB2GRAY))
             if showImage:
                 cv2.imshow(
-                'test', cv2.cvtColor(crop(frame, i), cv2.COLOR_RGB2GRAY))
+                'Detected Face', cv2.cvtColor(crop(frame, i), cv2.COLOR_RGB2GRAY))
+                cv2.imshow('LBP Histogram',lbp(cv2.cvtColor(crop(frame,i),cv2.COLOR_RGB2GRAY)
+                ,a,b))
             if debugStuff:
                 print(predicted)
             if predicted[1] <= confidenceLevel and showImage:
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (227, 45, 45), 2)
+                charactersToCutOff=len(str(eu("~")))+len("/The-Luca-Bazooka/training/")
                 cv2.putText(
-                    frame, folders[predicted[0]], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 255))
+                    frame, folders[predicted[0]][charactersToCutOff:-1], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 255))
             else:
                 if showImage:
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 191, 255), 2)
-        cv2.imshow("The Luca Bazooka", frame)
+        if showImage:
+            cv2.imshow("The Luca Bazooka", frame)
         if outputToFile==True:
-            video_writer.write(frame)
+            video_writer.append_data(frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     if outputToFile==True:
-        vidwrite.release()
-    video_capture.release()
+        video_writer.close()
+    vidcap.release()
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
