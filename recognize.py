@@ -1,16 +1,22 @@
 import cv2
 import sys
 import os
+from os.path import expanduser as eu
 import numpy as np
+from scipy import ndimage
 
 #PARAMETERS
-vidfeed=0 #0 usually corresponds to webcam feed
+vidfeed=str(eu("~"))+'/The-Luca-Bazooka/classic.mp4' #0 usually corresponds to webcam feed
 outputToFile=True
 filename='output.avi'
+confidenceLevel=125
 debugStuff=True
-cascadePath='/data/haarcascade_frontalface_default.xml'
-trainingFolders=['/training/luca/']
-
+rotate=True
+showImage=False
+cascadePath=str(eu("~"))+'/The-Luca-Bazooka/data/haarcascade_frontalface_default.xml'
+trainingFolders=[str(eu("~"))+'/The-Luca-Bazooka/training/luca']
+changeResolution=True
+size=(.2,.2)
 
 class FaceDetectionError(Exception):
     pass
@@ -18,7 +24,7 @@ class FaceDetectionError(Exception):
 
 def extractFace(img, train=False):
     path = cascadePath
-    cascade = cv2.CascadeClassifier(cascade)
+    cascade = cv2.CascadeClassifier(path)
     if train == True:
         faces = cascade.detectMultiScale(
             img, scaleFactor=1.1,
@@ -49,7 +55,9 @@ def faceProcess(img):
     try:
         return crop(img, faces[0])
     except IndexError:
-        raise FaceDetectionError("No face was detected")
+        cv2.imshow('Failed Detection',img)
+        cv2.waitKey()
+        #raise FaceDetectionError("No face was detected with img "+str(img))
 
 
 def loadImagesFromFolder(folder):
@@ -82,7 +90,7 @@ def trainAll(folders):
         working = trainStep(i[1], i[0])
         totalFaces.extend(working[0])
         totalLabels.extend(working[1])
-        if debugStuff=True:
+        if debugStuff==True:
             print(totalLabels)
     recognizer.train(totalFaces, np.array(totalLabels))
 
@@ -92,7 +100,8 @@ def main(folders):
     global recognizer
     recognizer = cv2.createLBPHFaceRecognizer()
     trainAll(folders)
-    cv2.namedWindow("The Luca Bazooka", cv2.cv.CV_WINDOW_AUTOSIZE)
+    if showImage:
+        cv2.namedWindow("The Luca Bazooka", cv2.cv.CV_WINDOW_AUTOSIZE)
     vidcap = cv2.VideoCapture(vidfeed)
     if outputToFile==True:
         w = int(vidcap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH))
@@ -101,26 +110,34 @@ def main(folders):
         video_writer = cv2.VideoWriter(filename, fourcc, 25, (w, h))
     while True:
         ret, frame = vidcap.read()
+        if rotate:
+            frame=ndimage.rotate(frame,270)
+        if changeResolution:
+            frame=cv2.resize(frame,(0,0),fx=size[0],fy=size[1])
         faces = extractFace(frame)
         for i in faces:
             (x, y, w, h) = i
             predicted = predict(
                 cv2.cvtColor(crop(frame, i), cv2.COLOR_RGB2GRAY))
-            cv2.imshow(
+            if showImage:
+                cv2.imshow(
                 'test', cv2.cvtColor(crop(frame, i), cv2.COLOR_RGB2GRAY))
-            print(predicted)
-            if predicted[1] <= 150:
+            if debugStuff:
+                print(predicted)
+            if predicted[1] <= confidenceLevel and showImage:
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (227, 45, 45), 2)
                 cv2.putText(
                     frame, folders[predicted[0]], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 255))
             else:
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 191, 255), 2)
+                if showImage:
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 191, 255), 2)
         cv2.imshow("The Luca Bazooka", frame)
         if outputToFile==True:
             video_writer.write(frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-    vidwrite.release()
+    if outputToFile==True:
+        vidwrite.release()
     video_capture.release()
     cv2.destroyAllWindows()
 
