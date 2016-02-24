@@ -5,7 +5,6 @@ import os
 from os.path import expanduser as eu
 import numpy as np
 from scipy import ndimage
-from skimage.feature import local_binary_pattern as lbp
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 
@@ -25,6 +24,13 @@ size=(.2,.2)
 resolution = (640,480)
 size = (640,480)
 framerate = 32
+visualizeLBP=True
+
+try:
+    from skimage.feature import local_binary_pattern as lbp
+except ImportError:
+    print("WARNING: skimage.feature failed to import. Turning off LBP visualization")
+    visualizeLBP=False
 
 class FaceDetectionError(Exception):
     pass
@@ -127,8 +133,9 @@ def main(folders):
             if showImage:
                 cv2.imshow(
                 'Detected Face', cv2.cvtColor(crop(frame, i), cv2.COLOR_RGB2GRAY))
-                cv2.imshow('LBP Histogram',lbp(cv2.cvtColor(crop(frame,i),cv2.COLOR_RGB2GRAY)
-                ,1,15))
+                if visualizeLBP:
+                    cv2.imshow('LBP Histogram',lbp(cv2.cvtColor(crop(frame,i),cv2.COLOR_RGB2GRAY)
+                    ,1,15))
             if debugStuff:
                 print(predicted)
             if predicted[1] <= confidenceLevel and showImage:
