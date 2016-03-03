@@ -21,11 +21,11 @@ class Servo:
     def write_horizon(self,angle):
         dc = float(angle)/10.0+2.5
         self.pwm_horizon.ChangeDutyCycle(dc)
-        time.sleep(0.1)
+        time.sleep(0.01)
     def write_vertical(self, angle):
         dc = float(angle)/10.0+2.5
         self.pwm_vertical.ChangeDutyCycle(dc)
-        time.sleep(0.1)
+        time.sleep(0.01)
     def update_dx(self, dx):
         self.angle_horizon += dx
         self.write_horizon(self.angle_horizon)

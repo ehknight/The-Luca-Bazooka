@@ -7,8 +7,9 @@ import numpy as np
 from scipy import ndimage
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-
-
+import meme
+import servo
+from __future__ import division
 #PARAMETERS
 vidfeed=str(eu("~"))+'/classic.mp4' #0 usually corresponds to webcam feed
 outputToFile=True
@@ -111,6 +112,7 @@ def trainAll(folders):
 
 
 def main(folders):
+    servo = servo.Servo(8,10,53.5/640, 41.41/480,640,480)
     global recognizer
     recognizer = cv2.createLBPHFaceRecognizer()
     trainAll(folders)
@@ -140,6 +142,7 @@ def main(folders):
                 print(predicted)
             if predicted[1] <= confidenceLevel and showImage:
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (227, 45, 45), 2)
+                servo.update(x+w/2, y+h/2)
                 charactersToCutOff=len(str(eu("~")))+len("/The-Luca-Bazooka/training/")
                 cv2.putText(
                     frame, folders[predicted[0]][charactersToCutOff:-1], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 255))
