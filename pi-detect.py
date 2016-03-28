@@ -1,3 +1,4 @@
+from __future__ import division
 import cv2
 import imageio
 import sys
@@ -9,7 +10,6 @@ from picamera.array import PiRGBArray
 from picamera import PiCamera
 import meme
 import servo
-from __future__ import division
 #PARAMETERS
 vidfeed=str(eu("~"))+'/classic.mp4' #0 usually corresponds to webcam feed
 outputToFile=True
@@ -84,7 +84,7 @@ def loadImagesFromFolder(folder):
 
 
 def main(folders):
-    servo = servo.Servo(8,10,53.5/640, 41.41/480,640,480)
+    servo = servo.Servo(8,10,53.5/640, 41.41/480,640,480,90,90)
     global recognizer
     trainAll(folders)
     if showImage:

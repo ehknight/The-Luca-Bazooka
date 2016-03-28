@@ -11,27 +11,39 @@ class Servo:
         self.angle_horizon = xinit  #angles such that laser dot is centered in camera
         self.angle_vertical = yinit
         self.yinit = yinit  
-        self.pwm_horizon.start(0)
-        self.pwm_vertical.start(0)
+        self.pwm_horizon.start(xinit/10.0+2.5)
+        self.pwm_vertical.start(yinit/10.0+2.5)
+        #self.write_horizon(xinit)
+        #self.write_vertical(yinit)
         self.xconst = xconst  #angle/pixel
         self.yconst = yconst
         self.x_res = x_res
         self.y_res = y_res
+        time.sleep(1)
+        print("GPIO set up ready")
 
     def write_horizon(self,angle):
         dc = float(angle)/10.0+2.5
         self.pwm_horizon.ChangeDutyCycle(dc)
+        print ("dc horizon is: %s" %dc)
         time.sleep(0.01)
     def write_vertical(self, angle):
         dc = float(angle)/10.0+2.5
         self.pwm_vertical.ChangeDutyCycle(dc)
+        print ("dc vertical is:%s"%dc)
         time.sleep(0.01)
     def update_dx(self, dx):
-        self.angle_horizon += dx
+        temp = self.angle_horizon + dx
+        if temp>=180:
+            self.angle_horizon = 180
+        elif temp<=0:
+            self.angle_horizon = 0
+        else:
+            self.angle_horizon = temp
         self.write_horizon(self.angle_horizon)
 
     def update_dy(self, dy):
-        self.angle_vertical = dy + self.yinit
+        self.angle_vertical = self.yinit-dy
         self.write_vertical(self.angle_vertical)
 
     def update (self, x, y):   #input the pixel x, y where object is found

@@ -1,3 +1,5 @@
+from __future__ import division
+from servo import Servo
 import cv2
 import imageio
 import sys
@@ -7,23 +9,24 @@ import numpy as np
 from scipy import ndimage
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-import meme
 import servo
-from __future__ import division
 #PARAMETERS
-vidfeed=str(eu("~"))+'/classic.mp4' #0 usually corresponds to webcam feed
-outputToFile=True
+vidfeed='/home/pi/The-Luca-Bazooka'+'/classic.mp4' #0 usually corresponds to webcam feed
+outputToFile=False
 filename='output.avi'
-confidenceLevel=125
+outputImage=True
+outputImagePath = '/home/pi/The-Luca-Bazooka/capturedStills/'
+confidenceLevel=300
 debugStuff=True
-rotate=True
-showImage=True
-cascadePath=str(eu("~"))+'/The-Luca-Bazooka/data/haarcascade_frontalface_default.xml'
-trainingFolders=[str(eu("~"))+'/The-Luca-Bazooka/training/luca']
+debug=True
+rotate=False
+showImage=False
+cascadePath='/home/pi'+'/The-Luca-Bazooka/data/haarcascade_frontalface_default.xml'
+trainingFolders=['/home/pi'+'/The-Luca-Bazooka/training/luca']
 changeResolution=True
 size=(.2,.2)
-resolution = (640,480)
-size = (640,480)
+resolution = (320,240)
+size = (320,240)
 framerate = 32
 visualizeLBP=True
 
@@ -112,7 +115,7 @@ def trainAll(folders):
 
 
 def main(folders):
-    servo = servo.Servo(8,10,53.5/640, 41.41/480,640,480)
+    servo = Servo(12,23,60/320, 50/240,320,240,90,90)
     global recognizer
     recognizer = cv2.createLBPHFaceRecognizer()
     trainAll(folders)
@@ -122,11 +125,19 @@ def main(folders):
     camera.resolution=resolution
     camera.framerate=framerate
     rawCapture=PiRGBArray(camera,size=size)
-    video_writer=imageio.get_writer('~/The-Luca-Bazooka/'+filename,fps=24)
+    frameNumber = 0
+    if outputToFile:
+        video_writer=imageio.get_writer('~/The-Luca-Bazooka/'+filename,fps=24)
     for nonprocessed in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+        frameNumber += 1
+        if debug:
+            print('VIDEO CAPTURE GOING')
         frame=nonprocessed.array
         if rotate:
             frame=ndimage.rotate(frame,270)
+        if debug:
+            #print(frame)
+            pass
         faces = extractFace(frame)
         for i in faces:
             (x, y, w, h) = i
@@ -140,15 +151,32 @@ def main(folders):
                     ,1,15))
             if debugStuff:
                 print(predicted)
-            if predicted[1] <= confidenceLevel and showImage:
+            if predicted[1] <= confidenceLevel and (showImage or outputImage):
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (227, 45, 45), 2)
                 servo.update(x+w/2, y+h/2)
-                charactersToCutOff=len(str(eu("~")))+len("/The-Luca-Bazooka/training/")
+                if debug:
+                    print('Updating servo with coords:')
+                    print(x+w/2-160,y+h/2-120)
+                charactersToCutOff=len('/home/pi')+len("/The-Luca-Bazooka/training/")
                 cv2.putText(
                     frame, folders[predicted[0]][charactersToCutOff:-1], (x, y), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 255, 255))
+            if predicted[1] <= confidenceLevel and not (showImage or outputImage):
+                servo.update(x+w/2-160, y+h/2-120)
+                if debug:
+                    print 'UPDATING SERVO WITH COORDS:'
+                    print (x+w/2,y+h/2)
+                    print 'FOUND LUCA FACE'
+                    print 'CONFIDENCE START'
+                    print (predicted[1])
+                    print 'CONFIDENCE END'
             else:
-                if showImage:
+                if debug:
+                    print 'FOUND NON-LUCA FACE'
+                    print (x,y,x+w,y+h)
+                if showImage or outputImage:
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 191, 255), 2)
+        if outputImage:
+            cv2.imwrite(outputImagePath+str(frameNumber)+'.jpg',frame)
         if showImage:
             cv2.imshow("The Luca Bazooka", frame)
         if outputToFile==True:
