@@ -16,7 +16,7 @@ outputToFile=False
 filename='output.avi'
 outputImage=True
 outputImagePath = '/home/pi/The-Luca-Bazooka/capturedStills/'
-confidenceLevel=300
+confidenceLevel=400
 debugStuff=True
 debug=True
 rotate=False
@@ -41,9 +41,10 @@ class FaceDetectionError(Exception):
 
 
 def extractFace(img, train=False):
+    """Self explanatory - extracts multiple faces from given numpy matrix using haar cascades"""
     path = cascadePath
     cascade = cv2.CascadeClassifier(path)
-    if train == True:
+    if train == True: #slightly relaxed constraints so more faces detected on training and less errors thrown
         faces = cascade.detectMultiScale(
             img, scaleFactor=1.1,
             minNeighbors=4,
@@ -59,6 +60,7 @@ def extractFace(img, train=False):
 
 
 def crop(img, c):
+    """Crops an image which 4-tuple c and acts on image img"""
     x, y, w, h = c[0], c[1], c[2], c[3]
     return img[y:y+h, x:x+w]
 
@@ -68,17 +70,19 @@ def predict(img):
 
 
 def faceProcess(img):
+    """Mega method - extracts faces and crops them sorting them by facial area detected"""
     faces = extractFace(img, True)
     faces = sorted(faces, key=lambda x: x[2]*x[3], reverse=True)
     try:
         return crop(img, faces[0])
     except IndexError:
-        cv2.imshow('Failed Detection',img)
+        cv2.imshow('Failed Detection',img) #hooray for throwing errors under the rug - in this vers, crashes are caught pretty much
         cv2.waitKey()
         #raise FaceDetectionError("No face was detected with img "+str(img))
 
 
 def loadImagesFromFolder(folder):
+    """Loads all images from specified path and transforms it to greyscale"""
     # based off of
     # http://stackoverflow.com/questions/30230592/loading-all-images-using-imread-from-a-given-folder
     images = []
@@ -94,6 +98,7 @@ def loadImagesFromFolder(folder):
 
 
 def trainStep(folder, label):
+    """Intermediate step for training, processes all images from folder then detects faces and prepares labels"""
     label = np.array(label)
     imgs = loadImagesFromFolder(folder)
     if debugStuff==True:
@@ -102,6 +107,7 @@ def trainStep(folder, label):
 
 
 def trainAll(folders):
+    """Calls trainstep for all folders and puts it in to global recognizer class"""
     totalFaces = []
     totalLabels = []
     for i in enumerate(folders):
@@ -115,7 +121,8 @@ def trainAll(folders):
 
 
 def main(folders):
-    servo = Servo(12,23,60/320, 50/240,320,240,90,90)
+    """Pretty much self-explanatory thanks to python: sets up servos and then reads images from picamera array and does stuff based on params"""
+    servo = Servo(12,23,60/320, 45/240,320,240,90,90)
     global recognizer
     recognizer = cv2.createLBPHFaceRecognizer()
     trainAll(folders)
@@ -152,6 +159,7 @@ def main(folders):
             if debugStuff:
                 print(predicted)
             if predicted[1] <= confidenceLevel and (showImage or outputImage):
+                print 'FOUND LUCA FACE'
                 cv2.rectangle(frame, (x, y), (x+w, y+h), (227, 45, 45), 2)
                 servo.update(x+w/2, y+h/2)
                 if debug:
@@ -190,4 +198,5 @@ def main(folders):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
+#called when called like python pi-recognize.py
     main(trainingFolders)

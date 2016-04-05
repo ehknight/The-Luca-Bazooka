@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 
-class Servo:
+class Servo: #Main servo class
     def __init__(self, pin_horizon, pin_vertical,xconst=0,yconst=0, x_res=0, y_res=0, xinit = 0, yinit =0):
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(pin_horizon,GPIO.OUT)
@@ -22,17 +22,17 @@ class Servo:
         time.sleep(1)
         print("GPIO set up ready")
 
-    def write_horizon(self,angle):
+    def write_horizon(self,angle): #Change horizontal servo
         dc = float(angle)/10.0+2.5
         self.pwm_horizon.ChangeDutyCycle(dc)
         print ("dc horizon is: %s" %dc)
         time.sleep(0.01)
-    def write_vertical(self, angle):
+    def write_vertical(self, angle): #For vertical servo
         dc = float(angle)/10.0+2.5
         self.pwm_vertical.ChangeDutyCycle(dc)
         print ("dc vertical is:%s"%dc)
         time.sleep(0.01)
-    def update_dx(self, dx):
+    def update_dx(self, dx):  #update the x axis 
         temp = self.angle_horizon + dx
         if temp>=180:
             self.angle_horizon = 180
@@ -42,7 +42,7 @@ class Servo:
             self.angle_horizon = temp
         self.write_horizon(self.angle_horizon)
 
-    def update_dy(self, dy):
+    def update_dy(self, dy): #updateing the y axis from deflection angle
         self.angle_vertical = self.yinit-dy
         self.write_vertical(self.angle_vertical)
 

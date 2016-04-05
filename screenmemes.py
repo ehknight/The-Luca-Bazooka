@@ -1,3 +1,6 @@
+'''
+A failed file originally used to try to point at things
+'''
 import RPi.GPIO as GPIO
 import servo
 
