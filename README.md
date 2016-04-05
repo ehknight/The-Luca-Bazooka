@@ -10,15 +10,21 @@ pi-detect.py: Detects any sort of face using Haar Cascades (cascade data pulled 
 
 testable-recognize.py: Nearly identical code to pi-recognize but configured so it can be run on a computer 
 
-servo.py: Contains the servo class used to point the pointer at a given coordinate. Used exclusively with the pi python code
+servo.py: Contains the servo class used to point the laser pointer at a given coordinate. Used exclusively with the pi python code
 
 ##Dev Path (Ethan/hyperdo)
  - Finalize OpenCV code for mac
  - Write Servo code for RasPi
- - Try to get OpenCV installed on RasPi - eventually settle on installing libopencv using apt-get
+ - Development moves entirely to Raspberry (we all collectively pray) 
+ - Tyler Kant takes away our Raspberry Pi and dreams (thanks Tyler)
+ - Track down Tyler in English class multiple times
+ - Luca breaks first raspberry pi while trying to get into stolen RasPi, have to get new, worse pi (thanks Luca)
+ - Spend multiple class periods lamenting over loss of raspberry pi and trying to fix anything if possible
+ - Try to get OpenCV installed on RasPi - eventually settle on installing libopencv using apt-get after two-three weeks
    + https://stackoverflow.com/questions/34983116/opencv-face-recognition-in-python
-   + https://stackoverflow.com/questions/34983116/opencv-face-recognition-in-python
- - Debug servo code for RasPi
+   + https://stackoverflow.com/questions/35724372/manually-selecting-apt-get-install-opencv2
+ - Debugged servo code for RasPi
+ - Watched RasPi twitch in terror after seeing Luca (problem not yet resolved)
  - Fine-tune servo params
  - Try to get servos set up on RasPi but use wrong I/O pins, eventually use random pins
  - Change opencv capture and reconfig pi-recognize to use propreitary pi camera module
@@ -27,4 +33,6 @@ servo.py: Contains the servo class used to point the pointer at a given coordina
  - Changed one of the servo to one with wires that look like Germany
    + Also known as changing continuous motion servo to one that has limits
  - Added even more training images, reverted when Luca's face stopped being a face
- - Started development on coil object launcing device
+ - Started development on coil gun
+ - Coil gun renamed to ferro-magnetic object launching device
+
