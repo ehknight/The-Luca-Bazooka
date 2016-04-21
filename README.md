@@ -35,4 +35,5 @@ servo.py: Contains the servo class used to point the laser pointer at a given co
  - Added even more training images, reverted when Luca's face stopped being a face
  - Started development on coil gun
  - Coil gun renamed to ferro-magnetic object launching device
+ - Parts ordered
 
