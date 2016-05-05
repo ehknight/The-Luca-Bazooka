@@ -39,3 +39,5 @@ servo.py: Contains the servo class used to point the laser pointer at a given co
  - Parts arrived
  - Finished circuit
  - Finished first coil
+ - Made ammunition (10 iron rods, 1.4in x 0.26in)
+ - Memes
